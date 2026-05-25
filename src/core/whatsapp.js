@@ -21,10 +21,34 @@ baileysLogger.level = 'silent';
 const originalStderr = process.stderr.write.bind(process.stderr);
 process.stderr.write = (chunk, ...args) => {
   const str = chunk.toString();
-  if (str.includes('Bad MAC') || str.includes('Failed to decrypt') || str.includes('Session error')) {
+  if (
+    str.includes('Bad MAC') ||
+    str.includes('Failed to decrypt') ||
+    str.includes('Session error') ||
+    str.includes('Closing open session') ||
+    str.includes('Closing session:') ||
+    str.includes('SessionEntry') ||
+    str.includes('pendingPreKey') ||
+    str.includes('currentRatchet')
+  ) {
     return true;
   }
   return originalStderr(chunk, ...args);
+};
+
+// Suppress ke stdout juga
+const originalStdout = process.stdout.write.bind(process.stdout);
+process.stdout.write = (chunk, ...args) => {
+  const str = chunk.toString();
+  if (
+    str.includes('Closing open session') ||
+    str.includes('Closing session:') ||
+    str.includes('SessionEntry') ||
+    str.includes('pendingPreKey')
+  ) {
+    return true;
+  }
+  return originalStdout(chunk, ...args);
 };
 
 // Hapus folder auth agar QR baru bisa muncul
